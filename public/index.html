@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Screen Stream Controller</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    #wrap {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      height: 100%;
+      gap: 8px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    #status {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    #stream {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border: 1px solid #333;
+      background: #000;
+      touch-action: none;
+    }
+
+    #hint {
+      font-size: 13px;
+      opacity: 0.85;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <div id="status">Connecting...</div>
+    <img id="stream" alt="Live screen" />
+    <div id="hint">Drag = move mouse pointer • quick tap = left click</div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const streamEl = document.getElementById('stream');
+
+    const wsProtocol = location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(`${wsProtocol}://${location.host}/ws`);
+
+    let lastTouch = null;
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function normalizedPos(clientX, clientY) {
+      const r = streamEl.getBoundingClientRect();
+      const x = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+      const y = Math.max(0, Math.min(1, (clientY - r.top) / r.height));
+      return { x, y };
+    }
+
+    function sendTouch(x, y, action = 'move') {
+      if (ws.readyState !== WebSocket.OPEN) return;
+      ws.send(JSON.stringify({ type: 'touch', x, y, action }));
+    }
+
+    ws.addEventListener('open', () => setStatus('Connected'));
+    ws.addEventListener('close', () => setStatus('Disconnected'));
+    ws.addEventListener('error', () => setStatus('Connection error'));
+
+    ws.addEventListener('message', (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'frame' && msg.image) {
+          streamEl.src = `data:image/jpeg;base64,${msg.image}`;
+        }
+      } catch {
+        // Ignore malformed messages.
+      }
+    });
+
+    streamEl.addEventListener('touchstart', (e) => {
+      const t = e.changedTouches[0];
+      if (!t) return;
+      const p = normalizedPos(t.clientX, t.clientY);
+      lastTouch = { ...p, t: Date.now() };
+      sendTouch(p.x, p.y, 'down');
+      e.preventDefault();
+    }, { passive: false });
+
+    streamEl.addEventListener('touchmove', (e) => {
+      const t = e.changedTouches[0];
+      if (!t) return;
+      const p = normalizedPos(t.clientX, t.clientY);
+      sendTouch(p.x, p.y, 'move');
+      e.preventDefault();
+    }, { passive: false });
+
+    streamEl.addEventListener('touchend', (e) => {
+      const t = e.changedTouches[0];
+      if (!t) return;
+      const p = normalizedPos(t.clientX, t.clientY);
+      sendTouch(p.x, p.y, 'up');
+
+      if (lastTouch) {
+        const dt = Date.now() - lastTouch.t;
+        const dx = Math.abs(p.x - lastTouch.x);
+        const dy = Math.abs(p.y - lastTouch.y);
+        if (dt < 220 && dx < 0.02 && dy < 0.02) {
+          sendTouch(p.x, p.y, 'tap');
+        }
+      }
+
+      e.preventDefault();
+    }, { passive: false });
+  </script>
+</body>
+</html>
