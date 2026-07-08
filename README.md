@@ -1,22 +1,74 @@
-# Basic Screen Stream + Mobile Controller
+# Local Video Server
 
-Minimal Node.js app that:
-- Streams your PC screen to a phone browser
-- Lets phone touch move the mouse pointer
-- Sends quick tap as left click
+Local Video Server is a project repository maintained by mahir-mahtab.
 
-## Run
+## Overview
 
-1. Install dependencies:
-   - `npm install`
-2. Start server:
-   - `npm start`
-3. Get your PC LAN URL:
-   - `npm run find-ip`
-4. Open one of the printed URLs on your phone (same Wi-Fi).
+This repository contains the source code and supporting files for `local-video-server`. The README is organized to make the project easier to understand, set up, and maintain.
 
-## Notes
+## Repository Details
 
-- Port is fixed at `8000`.
-- Mouse control in this version is Windows-only (uses PowerShell/User32).
-- If stream appears slow, this is expected for the very basic implementation.
+- **Owner:** `mahir-mahtab`
+- **Repository:** `mahir-mahtab/local-video-server`
+- **Default branch:** `master`
+- **Visibility:** public
+- **Created:** 2026-02-15
+- **Last updated:** 2026-02-15
+
+## Tech Stack
+
+- Express
+- Node.js
+- JavaScript
+- HTML
+
+## Project Structure
+
+- `public/` - source or supporting project directory
+- `.gitignore` - project file
+- `find-ip.js` - project file
+- `package-lock.json` - project file
+- `package.json` - project file
+- `README.md` - project file
+- `server.js` - project file
+- `test.js` - project file
+
+## Getting Started
+
+### Prerequisites
+
+- Install the runtime and tooling required for: Express, Node.js, JavaScript, HTML.
+- Git
+
+### Installation
+
+```bash
+git clone https://github.com/mahir-mahtab/local-video-server
+cd local-video-server
+npm install
+```
+
+## Usage
+
+Common commands inferred from the project files:
+
+| Task | Command |
+| --- | --- |
+| start | `npm run start` |
+
+## Available NPM Scripts
+
+| Script | Command |
+| --- | --- |
+| `find-ip` | `node find-ip.js` |
+| `start` | `node server.js` |
+
+## Development Notes
+
+- Keep generated files, local environment files, and dependency folders out of version control.
+- Update this README when setup steps, scripts, or deployment requirements change.
+- Add tests or documented verification steps when introducing new behavior.
+
+## License
+
+No license file was detected. Add one if this project is intended for reuse or distribution.
